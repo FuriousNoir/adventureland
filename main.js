@@ -12,8 +12,9 @@ setInterval(
 	}
 		
 	loot();
-
-	if(!attack_mode || character.rip || is_moving(character)) return;
+	if (is_moving(character)) return;
+	let go = buy_mp();
+	if (go || !attack_mode || character.rip || is_moving(character)) return;
 
 	var target=get_targeted_monster();
 	if(!target)
@@ -43,3 +44,33 @@ setInterval(
 
 }
 	,250); 
+
+function buy_mp() {
+	// If mp < 9999 && gold > (100*mp_required) then go to town (mpc merchand) and buy mp_required mp_potion
+	// 1 = 9999-9998 mp_required = mp_max - mp_qurrent
+	let mp_q = count_inventory_items("mpot1");
+	let mp_required = 9999 - mp_q;
+	if (mp_q < 50 && character.gold >= (100 * mp_required)) {
+		let coordinates = { x : -40, y : -120, map : "main" };
+		smart_move(coordinates).then(() => {
+			buy_with_gold("mpot1", mp_required);
+			smart_move("bee");
+
+		});
+	}
+
+	return false;
+}
+
+function count_inventory_items(item_name) {
+	let items = character.items;
+	let result = 0;
+	
+	for (let item of items) {
+		if (item != null && item.name == item_name) {
+			result = result + item.q;
+		}
+	}
+
+	return result;
+}
